@@ -1,0 +1,9 @@
+The LICENSE and the COPYRIGHTS appear in the file called LICENSE.
+
+HotLeakage Simulator Pre-Release Version 0.91.
+------------------------------------------------
+
+* The current tool needs to be more modular.
+* The tool needs to be completely separated from the SimpleScalar platform 
+so that it can be plugged in any framework.
+* More strcutures need to be modeled.

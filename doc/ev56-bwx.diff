@@ -1,0 +1,220 @@
+*** alpha.def	Mon Aug 31 10:15:20 1998
+--- simplesim-3.0/target-alpha/alpha.def	Tue Jan 12 13:02:16 1999
+***************
+*** 225,238 ****
+--- 225,255 ----
+      SET_GPR(RA, GPR(RB) + SEXT32(65536 * OFS));				\
+    }
+  DEFINST(LDAH,			0x09,
+  	"ldah",			"a,o(b)",
+  	IntALU,			F_ICOMP,
+  	DGPR(RA), DNA,		DNA, DGPR(RB), DNA)
+  
++ /* EV56 BWX extension... */
++ #define LDBU_IMPL							\
++   {									\
++     byte_t _result;							\
++     enum md_fault_type _fault;						\
++ 									\
++     _result = READ_BYTE(GPR(RB) + SEXT(OFS), _fault);			\
++     if (_fault != md_fault_none)					\
++       DECLARE_FAULT(_fault);						\
++ 									\
++     SET_GPR(RA, (quad_t)_result);					\
++   }
++ DEFINST(LDBU,			0x0a,
++ 	"ldbu",			"a,o(b)",
++ 	RdPort,			F_MEM|F_LOAD|F_DISP,
++ 	DGPR(RA), DNA,		DNA, DGPR(RB), DNA)
++ 
+  #define LDQ_U_IMPL							\
+    {									\
+      quad_t _result;							\
+      enum md_fault_type _fault;						\
+  									\
+      _result = READ_QUAD((GPR(RB) + SEXT(OFS)) & ~7, _fault);		\
+      if (_fault != md_fault_none)					\
+***************
+*** 241,254 ****
+--- 258,316 ----
+      SET_GPR(RA, _result);						\
+    }
+  DEFINST(LDQ_U,			0x0b,
+  	"ldq_u",		"a,o(b)",
+  	RdPort,			F_MEM|F_LOAD|F_DISP,
+  	DGPR(RA), DNA,		DNA, DGPR(RB), DNA)
+  
++ /* EV56 BWX extension... */
++ #define LDWU_IMPL							\
++   {									\
++     half_t _result;							\
++     enum md_fault_type _fault;						\
++ 									\
++     _result = READ_HALF(GPR(RB) + SEXT(OFS), _fault);			\
++     if (_fault != md_fault_none)					\
++       DECLARE_FAULT(_fault);						\
++ 									\
++     SET_GPR(RA, (quad_t)_result);					\
++   }
++ DEFINST(LDWU,			0x0c,
++ 	"ldwu",			"a,o(b)",
++ 	RdPort,			F_MEM|F_LOAD|F_DISP,
++ 	DGPR(RA), DNA,		DNA, DGPR(RB), DNA)
++ 
++ /* EV56 BWX extension... */
++ #define STW_IMPL							\
++   {									\
++     enum md_fault_type _fault;						\
++ 									\
++     WRITE_HALF((half_t)GPR(RA), GPR(RB) + SEXT(OFS), _fault);		\
++     if (_fault != md_fault_none)					\
++       DECLARE_FAULT(_fault);						\
++   }
++ DEFINST(STW,			0x0d,
++ 	"stw",			"a,o(b)",
++ 	WrPort,			F_MEM|F_STORE|F_DISP,
++ 	DNA, DNA,		DGPR(RA), DGPR(RB), DNA)
++ 
++ /* EV56 BWX extension... */
++ #define STB_IMPL							\
++   {									\
++     enum md_fault_type _fault;						\
++ 									\
++     WRITE_BYTE((byte_t)GPR(RA), GPR(RB) + SEXT(OFS), _fault);		\
++     if (_fault != md_fault_none)					\
++       DECLARE_FAULT(_fault);						\
++   }
++ DEFINST(STB,			0x0e,
++ 	"stb",			"a,o(b)",
++ 	WrPort,			F_MEM|F_STORE|F_DISP,
++ 	DNA, DNA,		DGPR(RA), DGPR(RB), DNA)
++ 
+  #define STQ_U_IMPL							\
+    {									\
+      enum md_fault_type _fault;						\
+  									\
+      WRITE_QUAD(GPR(RA), (GPR(RB) + SEXT(OFS)) & ~7, _fault);		\
+      if (_fault != md_fault_none)					\
+        DECLARE_FAULT(_fault);						\
+***************
+*** 280,293 ****
+--- 342,358 ----
+  
+  DEFLINK(FLTL, 0x17, "fltl", 5, /* FIXME: check this... */0x7f)
+  
+  DEFLINK(MISC, 0x18, "misc", 12, 0x0f)
+  
+  DEFLINK(JMPJSR, 0x1a, "jmpjsr", 14, 0x03)
+  
++ /* EV56 BWX extension... */
++ DEFLINK(EXTS, 0x1c, "exts", 5, 0x7f)
++ 
+  #define LDF_IMPL							\
+    {									\
+      /* FIXME: unimplemented */						\
+      DECLARE_FAULT(md_fault_unimpl);					\
+    }
+  DEFINST(LDF,			0x20,
+  	"ldf (unimpl)",		"",
+***************
+*** 2853,2870 ****
+--- 2918,2998 ----
+    }
+  DEFINST(JSR_COROUTINE,		0x03,
+  	"jsr_coroutine",	"a,(b)",
+  	IntALU,			F_CTRL|F_UNCOND|F_INDIRJMP,
+  	DGPR(RA), DNA,		DGPR(RB), DNA, DNA)
+  
+  
++ /* EV56 BWX extension... */
++ CONNECT(EXTS)
++ 
++ /* EV56 BWX extension... */
++ DEFLINK(SEXTB_LINK, 0x00, "sextb_link", 12, 1)
++ 
++ /* EV56 BWX extension... */
++ DEFLINK(SEXTW_LINK, 0x01, "sextw_link", 12, 1)
++ 
++ 
++ /* EV56 BWX extension... */
++ CONNECT(SEXTB_LINK)
++ 
++ /* EV56 BWX extension... */
++ #define SEXTB_IMPL							\
++   {									\
++     SET_GPR(RC, (quad_t)(squad_t)(sbyte_t)(GPR(RB) & 0xff));		\
++   }
++ DEFINST(SEXTB,			0x00,
++ 	"sextb",		"b,c",
++ 	IntALU,			F_ICOMP,
++ 	DGPR(RC), DNA,		DGPR(RB), DNA, DNA)
++ 
++ /* EV56 BWX extension... */
++ #define SEXTBI_IMPL							\
++   {									\
++     SET_GPR(RC, (quad_t)(squad_t)(sbyte_t)(IMM & 0xff));		\
++   }
++ DEFINST(SEXTBI,			0x01,
++ 	"sextb",		"i,c",
++ 	IntALU,			F_ICOMP|F_IMM,
++ 	DGPR(RC), DNA,		DNA, DNA, DNA)
++ 
++ 
++ /* EV56 BWX extension... */
++ CONNECT(SEXTW_LINK)
++ 
++ /* EV56 BWX extension... */
++ #define SEXTW_IMPL							\
++   {									\
++     SET_GPR(RC, (quad_t)(squad_t)(shalf_t)(GPR(RB) & 0xffff));		\
++   }
++ DEFINST(SEXTW,			0x00,
++ 	"sextw",		"b,c",
++ 	IntALU,			F_ICOMP,
++ 	DGPR(RC), DNA,		DGPR(RB), DNA, DNA)
++ 
++ /* EV56 BWX extension... */
++ #define SEXTWI_IMPL							\
++   {									\
++     SET_GPR(RC, (quad_t)(squad_t)(shalf_t)(IMM & 0xffff));		\
++   }
++ DEFINST(SEXTWI,			0x01,
++ 	"sextw",		"i,c",
++ 	IntALU,			F_ICOMP|F_IMM,
++ 	DGPR(RC), DNA,		DNA, DNA, DNA)
++ 
++ 
++ 
+  /* clean up all definitions... */
+  #undef LDA_IMPL
+  #undef LDAH_IMPL
++ #undef LDBU_IMPL
+  #undef LDQ_U_IMPL
++ #undef LDWU_IMPL
++ #undef STW_IMPL
++ #undef STB_IMPL
+  #undef STQ_U_IMPL
+  #undef FLTV_IMPL
+  #undef LDF_IMPL
+  #undef LDG_IMPL
+  #undef LDS_IMPL
+  #undef LDT_IMPL
+  #undef STF_IMPL
+***************
+*** 3065,3075 ****
+--- 3193,3207 ----
+  #undef FETCH_M_IMPL
+  #undef RPCC_IMPL
+  #undef _RS_IMPL
+  #undef JMP_IMPL
+  #undef JSR_IMPL
+  #undef RETN_IMPL
+  #undef JSR_COROUTINE_IMPL
++ #undef SEXTB_IMPL
++ #undef SEXTBI_IMPL
++ #undef SEXTW_IMPL
++ #undef SEXTWI_IMPL
+  
+  #undef DEFINST
+  #undef DEFLINK
+  #undef CONNECT

@@ -1,0 +1,279 @@
+The LICENSE and the COPYRIGHTS appear in the file called LICENSE.
+
+HotLeakage Simulator Pre-Release Version 0.91.
+------------------------------------------------
+
+
+FAQ
+
+1). Where will it work?
+HotLeakage should compile on any system that SimpleScalar compiles on. 
+Testing/development was primarily done with the ALPHA version.
+Finally HotLeakage would be in a modular form such that any simulator 
+infrastructure can use it.
+
+2) How to run it?
+Running HotLeakage should be just like running sim-outorder.  Provide it
+with your processor configuration parameters, input binary, and input
+data set.  
+There are lots of separate processor configuration parameters for 
+leakage modeling. ( They are in the sim_reg_leak_options  in leakinit.c 
+module).
+
+Most of them are to do with the parameters like supply Voltage, threshold 
+Voltages, temperature, aspect ratio of the structure concerned.
+For e.g.
+-technology          TECH_070 # technology length i.e., {TECH_180, 
+TECH_130, ,TECH_070, |none}
+-ireg:read_ports       8.0000 # ireg file read  ports
+-ireg:write_ports       4.0000 # ireg file write  ports
+-ireg:temp           383.0000 # ireg file temperature in Kelvin
+-il1:ports             2.0000 # l1 instruction cache  ports
+-il2:ports             2.0000 # l2 instruction cache  ports
+-dl1:ports             2.0000 # l1 data cache  ports
+-dl2:ports             2.0000 # l2 data cache  ports
+-il1:temp            383.0000 # l1 instruction cache temperature in Kelvin
+-il2:temp            383.0000 # l2 instruction cache temperature in Kelvin
+-dl1:temp            383.0000 # l1 data cache temperature in Kelvin
+-dl2:temp            383.0000 # l2 data cache temperature in Kelvin
+-tox:var               0.0400 # Tox Std Variation
+-vdd:var               0.0330 # Vdd Std Variation
+-length:var            0.1330 # Tech Length Std Variation
+-threshold_n:var       0.0380 # Threshold Nmos Variation
+-threshold_p:var       0.0380 # Threshold Pmos Variation
+-samples:boxm           10000 # samples for box-mueller method
+-tox                   0.0000 # Tox
+-ireg:voltage          0.9000 # ireg file supply voltage
+-ireg:threshold_Cell_N       0.1902 # ireg file threshold voltage N-Type Cell
+-ireg:threshold_Cell_P       0.2130 # ireg file threshold voltage P-Type Cell
+-ireg:threshold_Access_N       0.1902 # ireg file threshold voltage N-Type 
+Bitline
+-il1:voltage           0.9000 # l1 instruction cache supply voltage
+-il2:voltage           0.9000 # l2 instruction cache supply voltage
+-dl1:voltage           0.9000 # l1 data cache supply voltage
+-dl2:voltage           0.9000 # l2 data cache supply voltage
+-il1:threshold_Cell_N       0.1902 # l1 instruction cache threshold voltage 
+N-Type Cell
+-il1:threshold_Cell_P       0.2130 # l1 instruction cache threshold voltage 
+P-Type Cell
+-il1:threshold_Access_N       0.1902 # l1 instruction cache threshold voltage N-Type Bitline
+-il2:threshold_Cell_N       0.1902 # l2 instruction cache threshold voltage 
+N-Type Cell
+-il2:threshold_Cell_P       0.2130 # l2 instruction cache threshold voltage 
+P-Type Cell
+-il2:threshold_Access_N       0.1902 # l2 instruction cache threshold voltage N-Type Bitline
+-il1:threshold_P       0.2130 # l1 instruction cache threshold voltage P-Type
+-il2:threshold_P       0.2130 # l2 instruction cache threshold voltage P-Type
+-dl1:threshold_Cell_N       0.1902 # l1 data cache threshold voltage N-Type 
+Cell
+-dl1:threshold_Cell_P       0.2130 # l1 data cache threshold voltage P-Type 
+Cell
+-dl1:threshold_Access_N       0.1902 # l1 data cache threshold voltage N-Type Bitline
+-dl2:threshold_P       0.2130 # l2 data cache threshold voltage p-Type
+-dl1:threshold_P       0.2130 # l1 data cache threshold voltage P-Type
+-dl2:threshold_Cell_N       0.1902 # l2 data cache threshold voltage N-Type 
+Cell
+-dl2:threshold_Cell_P       0.2130 # l2 data cache threshold voltage P-Type 
+Cell
+-dl2:threshold_Access_N       0.1902 # l2 data cache threshold voltage N-Type Bitline
+-RAM:aspect_ratio_access_ram_cell_N       2.7429 # aspect ratio of  RAM access cell N-Type
+-RAM:aspect_ratio_ram_cell_l2_N       4.5714 # aspect ratio of  RAM cell 
+N-Type
+-RAM:aspect_ratio_ram_cell_l3_P       2.4000 # aspect ratio of  RAM cell 
+P-Type
+-IREG:aspect_ratio_access_ireg_cell_N       2.7429 # aspect ratio of  ireg 
+access cell N-Type
+-RAM:aspect_ratio_ireg_cell_l2_N       4.5714 # aspect ratio of  ireg cell 
+N-Type
+-RAM:aspect_ratio_ireg_cell_l3_P       2.4000 # aspect ratio of  ireg cell 
+P-Type
+-INVERTER:aspect_ratio_decoder_inverter_P      11.4286 # aspect ratio of 
+decoder inverter cell P-Type
+-INVERTER:aspect_ratio_decoder_inverter_N       5.7143 # aspect ratio of 
+decoder inverter cell N-Type
+-INVERTER:aspect_ratio_comparator_inverter1_N       6.8571 # aspect ratio of 
+comparator inverter1 cell N-Type
+-INVERTER:aspect_ratio_comparator_inverter1_P      11.4286 # aspect ratio of 
+comparator inverter1 cell P-Type
+
+
+If the user wants to model a cache with a different kind of cell  or a 
+different technology he or she might need to change the above values.
+Some of the configuration parameters are concerned with the leakage 
+saving techniques implemented in this tool for caches.
+For e.g
+-global:counter           256 # global counter limit
+-local:counter              3 # local counter limit
+-sample:interval          200 # sample interval
+-cache_leak_ctrl:type     gatedVss # leakage control type 
+{none|gatedVss|drowsy|RBB}
+-cache_leak_ctrl:switch_cycles_l2h            3 # time for low to 
+high switch
+-cache_leak_ctrl:switch_cycles_h2l           30 # time for high to 
+low switch
+-cache_leak_ctrl:switch_power_l2h       0.0003 # low to high switch cost
+-cache_leak_ctrl:switch_power_h2l       0.0001 # high to low switch cost
+-cache_leak_ctrl:penalty            0 # extra latency in low leak mode
+	
+
+
+Please see the hotleak_config.cfg file for most of the common ones that a 
+user might be interested in.
+
+3). What are the new stats printed with HotLeakage? 
+
+In the beginning of the simulation all the leakage currents are calculated 
+(Currently only the register file and the caches).
+The leakage currents for each component (for e.g. for a cache, the data 
+array, tag-array, decoders etc ) are printed.
+
+
+For example:
+Data Cache Power Consumption: 0.850207
+Data Cache Leakage Power
+ decode_power_data (W): 0.0029866
+ decode_power_tag (W): 0.000746651
+ senseamp_power_data (W): 0.00272779
+ senseamp_power_tag (W): 0.000255731
+ comparator_power_leak (W): 4.55784e-05
+ mux_driver_power_leak (W): 0.000248689
+ output_driver_power_leak (W): 0.00996414
+ tagarray_power (W): 0.000115888
+ datarray_power (W): 0.833116
+
+
+In the code (leakage.c) look out for leakage_power structure 
+( e.g leakage_power->il1_bitline_data_ileak )  that store these 
+values (The leakage currents for structures).
+
+4). How should I use the  statistics  provided?
+
+All the calculated leakage current values are stored in the 
+leakage_power structure. For e.g to calculate the leakage energy over 
+the entire simulation one needs to add the per cycle leakage value and 
+print it. This is left to the user. He or she can use the leakage 
+currents anyway he or she wants.
+The tool currently uses it for calculating the leakage savings of the 
+techqniues implemented for caches ( Drowsy, GatedVss and RBB).
+
+If the user need to model a different lekage saving technqiue he or she 
+can determine as to which part of the cell of a cache will be turned off 
+etc.Then he or she can use : 
+
+double nmos_ileakage(double aspect_ratio, double Volt, double Vth0, 
+double Tkelvin, double tox0)
+
+double pmos_ileakage(double aspect_ratio, double Volt, double Vth0, 
+double Tkelvin, double tox0)
+
+These two functions are the main functions that calculate the leakage of 
+one P and N transistor. Depending on the circuit one can call these these to 
+to calculate the leakage of one cell of a structure. Then the user can 
+define a new variable in the universal leakage_power structure.
+
+For e.g. for the leakage of a single cell when gatedVss is used for 
+Dl1 cache:
+
+leakage_power->dl1_cell_gateVss_leakage =  (Vdds *
+nmos_ileakage(aspect_gate_vss,Vdds, Vth0_gate_vss,Tkelvin,Tox_User)* 
+(NBITS_PER_LINE(cache_dl1)) * cache_dl1->assoc * cache_dl1->nsets);
+
+5). How do I model a different structure of the processor 
+( for e.g. an ALU)?
+
+It should be very simple to add a leakage for a separate part of the 
+processor (caches and arch. register file have been modeled already).
+For the circuit point of view please read the document 
+README_HotLeakage_Model.doc. 
+
+After the user has done the above and mapped the circuit parameters to 
+the variables ( in leakinit.c) the user now needs to write some code for it.
+If the user wants more flexibility then he or she needs to add as command 
+line parameters (in leakinit.c) for  some of the following things:
+
+* The supply voltage for that staructure.
+* The apsect ratio for the cells used in that structure.
+* The temperature.
+* The threshold voltages for the different transistors used in that structure.
+
+For e.g  in a Dl1 cache
+
+-dl1:temp            383.0000 # l1 data cache temperature in Kelvin
+-dl1:voltage           0.9000 # l1 data cache supply voltage
+-dl1:threshold_Cell_N       0.1902 # l1 data cache threshold voltage N-Type 
+Cell
+-dl1:threshold_Cell_P       0.2130 # l1 data cache threshold voltage P-Type 
+Cell
+-dl1:threshold_Access_N       0.1902 # l1 data cache threshold voltage N-Type Bitline
+-dl1:threshold_P       0.2130 # l1 data cache threshold voltage P-Type
+-RAM:aspect_ratio_access_ram_cell_N       2.7429 # aspect ratio of  RAM 
+access cell N-Type
+-RAM:aspect_ratio_ram_cell_l2_N       4.5714 # aspect ratio of  RAM cell 
+N-Type
+-RAM:aspect_ratio_ram_cell_l3_P       2.4000 # aspect ratio of  RAM cell 
+P-Type
+
+New variables to store the calculateed leakage currents needs to be added 
+thorugh leakage.h in the leakage_power_type structure.
+For e.g. in a Dl1 cache
+
+ double dl1_comparator_leak;
+ double dl1_muxdrv_leak;
+ double dl1_outdrv_leak;
+ double dl1_senseamp_data_leak;
+ double dl1_senseamp_tag_leak;
+ double dl1_leakage;
+
+
+
+
+The next step is to put actual code to model leakage for that structure. 
+The user currently needs to write a function in leakage.c.
+
+For e.g for a Dl1 Cache:
+
+double calculate_leakage_dl1cache(double Vdds, double Tkelvin, 
+leakage_power_type *leakage_power)
+This function  should be  called in leakinit.c in the leakage_init( ) 
+function.
+This function will call the two core functions:
+
+double nmos_ileakage(double aspect_ratio, double Volt, double Vth0, 
+double Tkelvin, double tox0)
+
+double pmos_ileakage(double aspect_ratio, double Volt, double Vth0, 
+double Tkelvin, double tox0)
+
+The above two  functions will be called according to how many N and P 
+transistors make up one cell. Then the leakage is calculate according to 
+how many cells make up the complete structure.
+
+The almost same thing needs to be done for modeling a different technology.
+The user needs to do some circuit simulastions to find the parameters needed
+in the initialization phase in leakinit.c ( Please read 
+README_HotLeakage_Model.doc. ). Currently the tool supports four technologies ( 180nm, 130nm, 100nm and 70nm).
+
+6). Can I use this model in a different simulator (not SimpleScalar based)?
+
+Yes. One can do this. But currently the model is integrated in Wattch. 
+It will require some work to separate this. The core of the tool is leakage.c.This with the initialization phase module leakinit.c needs to be primarily separated. Some of the parameters used are taken from the original Wattch. They 
+also need to taken from powerinit.c and put in the HotLeakage module. For 
+calculating the leakage in caches CACTI is used. So CACTI needs to be a part 
+of HotLeakage. Currently the strcuture of the cache( size, associativity etc)
+is taken from the SimpleScalar infrastructure. Also the command line 
+parameters are taken from the SimpleScalar interface. This needs to be changedand a common  generic interface for HotLeakage needs to be developed.  
+cache leakage saving techniques. 
+The final release will have the model in a completey independent module which can be plugged in any simulator.
+
+
+
+
+
+
+
+
+
+
+
+
+
